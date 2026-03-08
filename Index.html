@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Health & Activity Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #7a9e87;
+    --sage-light: #b2cbb9;
+    --sage-pale: #e8f0eb;
+    --warm-light: #f0dfc8;
+    --warm: #c4956a;
+    --soft-white: #faf8f5;
+    --text-dark: #2c3a30;
+    --text-mid: #5a6b5e;
+    --text-light: #8a9d8e;
+    --care-accent: #9b7db0;
+    --care-light: #e8dff2;
+    --line: #dce8de;
+    --physical: #c4956a;
+    --emotional: #9b7db0;
+    --psychological: #5b8fa8;
+    --physical-light: #f5ead8;
+    --emotional-light: #ede5f5;
+    --psychological-light: #d8eaf4;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Source Sans 3', sans-serif; background: var(--soft-white); color: var(--text-dark); }
+  .page { max-width: 860px; margin: 0 auto; padding: 40px 32px 80px; }
+
+.header { text-align: center; margin-bottom: 44px; padding-bottom: 28px; border-bottom: 2px solid var(–sage-light); position: relative; }
+.header::after { content: ‘✦’; position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%); background: var(–soft-white); color: var(–sage); padding: 0 12px; font-size: 18px; }
+.header h1 { font-family: ‘Playfair Display’, serif; font-size: 2.3rem; color: var(–text-dark); margin-bottom: 6px; font-weight: 400; }
+.header p { font-size: 0.97rem; color: var(–text-light); font-weight: 300; }
+.date-bar { display: flex; justify-content: center; gap: 22px; margin-top: 18px; flex-wrap: wrap; }
+.date-field { display: flex; align-items: center; gap: 7px; font-size: 0.88rem; color: var(–text-mid); }
+.date-field label { font-weight: 500; }
+.date-field input[type=“date”], .date-field select, .date-field input[type=“number”] { border: none; border-bottom: 1.5px solid var(–sage-light); background: transparent; padding: 2px 5px; font-family: inherit; font-size: 0.88rem; color: var(–text-dark); outline: none; }
+
+.section { margin-bottom: 32px; background: white; border-radius: 16px; padding: 26px 30px; border: 1px solid var(–line); box-shadow: 0 2px 12px rgba(0,0,0,0.04); page-break-inside: avoid; }
+.section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1.5px solid var(–sage-pale); }
+.section-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.section-title { font-family: ‘Playfair Display’, serif; font-size: 1.25rem; color: var(–text-dark); font-weight: 600; }
+.section-subtitle { font-size: 0.78rem; color: var(–text-light); margin-top: 2px; font-style: italic; }
+
+.form-row { display: flex; gap: 18px; margin-bottom: 14px; flex-wrap: wrap; }
+.form-group { flex: 1; min-width: 130px; }
+.form-group label { display: block; font-size: 0.76rem; font-weight: 600; color: var(–text-light); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+input[type=“time”], input[type=“number”] { width: 100%; border: none; border-bottom: 1.5px solid var(–line); padding: 5px 3px; font-family: inherit; font-size: 0.97rem; color: var(–text-dark); background: transparent; outline: none; }
+textarea { width: 100%; border: 1.5px solid var(–line); border-radius: 9px; padding: 9px 12px; font-family: inherit; font-size: 0.93rem; color: var(–text-dark); background: var(–soft-white); outline: none; resize: vertical; min-height: 60px; line-height: 1.6; transition: border-color 0.2s; }
+textarea:focus { border-color: var(–sage); }
+textarea::placeholder { color: var(–text-light); font-style: italic; }
+
+.scale-row { display: flex; align-items: center; margin-top: 5px; }
+.scale-label { font-size: 0.7rem; color: var(–text-light); margin-right: 7px; min-width: 46px; }
+.scale-label.right { margin-left: 7px; margin-right: 0; }
+.scale-options { display: flex; gap: 3px; flex: 1; }
+.scale-options input[type=“radio”] { display: none; }
+.scale-options label { flex: 1; text-align: center; padding: 5px 2px; border-radius: 6px; border: 1.5px solid var(–line); font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.15s; color: var(–text-mid); text-transform: none; letter-spacing: 0; }
+.scale-options input[type=“radio”]:checked + label { background: var(–sage); border-color: var(–sage); color: white; }
+
+.check-group { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 5px; }
+.check-group input[type=“checkbox”] { display: none; }
+.check-group label { padding: 4px 12px; border: 1.5px solid var(–line); border-radius: 18px; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; color: var(–text-mid); text-transform: none; letter-spacing: 0; }
+.check-group input[type=“checkbox”]:checked + label { background: var(–sage-pale); border-color: var(–sage); color: var(–sage); font-weight: 600; }
+
+/* Night table */
+.night-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.night-table th { font-size: 0.7rem; font-weight: 600; color: var(–text-light); text-transform: uppercase; letter-spacing: 0.05em; text-align: left; padding: 4px 7px; border-bottom: 1px solid var(–line); }
+.night-table td { padding: 4px 5px; }
+.night-table td input { border: none; border-bottom: 1.5px solid var(–line); width: 100%; font-family: inherit; font-size: 0.88rem; background: transparent; outline: none; padding: 3px 3px; color: var(–text-dark); }
+.night-table td select { border: none; border-bottom: 1.5px solid var(–line); background: transparent; font-family: inherit; font-size: 0.84rem; outline: none; width: 100%; padding: 3px 1px; color: var(–text-dark); }
+
+/* Activity entries */
+.activity-entry { background: var(–sage-pale); border-radius: 11px; padding: 14px 16px; margin-bottom: 10px; }
+.care-entry { background: var(–care-light); }
+.activity-entry-header { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 9px; }
+.time-range { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+.time-range input { width: 78px; border: none; border-bottom: 1.5px solid var(–sage-light); background: transparent; font-family: inherit; font-size: 0.85rem; color: var(–text-dark); outline: none; padding: 2px 3px; }
+.time-range span { color: var(–text-light); font-size: 0.8rem; }
+
+.response-tags { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 7px; }
+.response-tag-label { font-size: 0.7rem; color: var(–text-light); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 2px; }
+.response-tags input[type=“checkbox”] { display: none; }
+.tag-physical + label { background: var(–physical-light); border-color: var(–physical); }
+.tag-emotional + label { background: var(–emotional-light); border-color: var(–emotional); }
+.tag-psychological + label { background: var(–psychological-light); border-color: var(–psychological); }
+.response-tags label { padding: 3px 10px; border: 1.5px solid transparent; border-radius: 13px; font-size: 0.76rem; cursor: pointer; transition: all 0.15s; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(–text-mid); }
+.tag-physical:checked + label { background: var(–physical); color: white; }
+.tag-emotional:checked + label { background: var(–emotional); color: white; }
+.tag-psychological:checked + label { background: var(–psychological); color: white; }
+
+.how-felt { margin-top: 8px; }
+.how-felt label { font-size: 0.7rem; font-weight: 600; color: var(–text-light); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+.how-felt textarea { min-height: 46px; font-size: 0.88rem; }
+
+.pain-entry { background: #fef5f5; border: 1.5px solid #f4c4c4; border-radius: 11px; padding: 13px 15px; margin-bottom: 9px; }
+
+.add-btn { display: flex; align-items: center; gap: 6px; background: none; border: 1.5px dashed var(–sage-light); border-radius: 9px; color: var(–sage); font-family: inherit; font-size: 0.85rem; font-weight: 600; padding: 8px 15px; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
+.add-btn:hover { background: var(–sage-pale); border-color: var(–sage); }
+.care-add-btn { border-color: #cbb8e0; color: var(–care-accent); }
+.care-add-btn:hover { background: var(–care-light); border-color: var(–care-accent); }
+
+/* Suggest box */
+.suggest-box { background: #eef7f1; border: 2px solid var(–sage); border-radius: 16px; padding: 22px 26px; margin-bottom: 32px; }
+.suggest-box-header { display: flex; align-items: center; gap: 11px; margin-bottom: 16px; }
+.suggest-box-title { font-family: ‘Playfair Display’, serif; font-size: 1.2rem; color: var(–text-dark); font-weight: 600; }
+.suggest-box-sub { font-size: 0.77rem; color: var(–text-light); font-style: italic; margin-top: 2px; }
+.suggest-controls { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; align-items: flex-end; }
+.suggest-controls .form-group { flex: 1; min-width: 140px; }
+.suggest-controls select { width: 100%; border: none; border-bottom: 1.5px solid var(–sage-light); background: transparent; font-family: inherit; font-size: 0.92rem; color: var(–text-dark); outline: none; padding: 5px 3px; cursor: pointer; }
+.suggest-btn { background: var(–sage); color: white; border: none; border-radius: 9px; padding: 9px 20px; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; align-self: flex-end; }
+.suggest-btn:hover { background: var(–text-dark); }
+.suggest-btn:disabled { background: var(–sage-light); cursor: not-allowed; }
+.suggest-output { display: none; background: white; border-radius: 10px; padding: 16px 18px; border: 1px solid var(–line); }
+.suggest-output.visible { display: block; }
+.suggest-output h4 { font-family: ‘Playfair Display’, serif; font-size: 0.98rem; color: var(–sage); margin-bottom: 8px; margin-top: 13px; }
+.suggest-output h4:first-of-type { margin-top: 0; }
+.sug-hint { font-size: 0.8rem; color: var(–text-light); font-style: italic; margin-bottom: 12px; }
+.sug-note { font-size: 0.85rem; color: var(–text-mid); font-style: italic; margin-top: 11px; border-top: 1px solid var(–line); padding-top: 10px; }
+.sug-list { list-style: none; padding: 0; margin: 0; }
+.sug-item { margin-bottom: 6px; }
+.sug-tick-label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.sug-tick { display: none; }
+.sug-tick-box { width: 20px; height: 20px; border: 2px solid var(–sage-light); border-radius: 5px; flex-shrink: 0; margin-top: 1px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; background: white; }
+.sug-tick:checked ~ .sug-tick-box { background: var(–sage); border-color: var(–sage); }
+.sug-tick:checked ~ .sug-tick-box::after { content: ‘✓’; color: white; font-size: 13px; font-weight: 700; }
+.sug-tick:checked ~ .sug-text { color: var(–text-light); text-decoration: line-through; text-decoration-color: var(–sage-light); }
+.sug-text { font-size: 0.9rem; color: var(–text-dark); line-height: 1.5; transition: color 0.15s; }
+.sug-tip .sug-text { font-size: 0.88rem; color: var(–text-mid); font-style: italic; padding-left: 4px; }
+.suggest-loading { color: var(–text-light); font-style: italic; font-size: 0.88rem; text-align: center; padding: 10px 0; }
+
+.eod-row { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 14px; }
+.eod-row .form-group { flex: 1; min-width: 150px; }
+
+.note-hint { font-size: 0.75rem; color: var(–text-light); font-style: italic; margin-top: 3px; }
+
+.legend { display: flex; gap: 16px; flex-wrap: wrap; background: white; border-radius: 9px; padding: 10px 16px; border: 1px solid var(–line); margin-bottom: 22px; font-size: 0.78rem; align-items: center; }
+.legend-title { font-weight: 600; color: var(–text-mid); }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+.print-bar { text-align: center; margin-bottom: 22px; }
+.print-btn { background: var(–sage); color: white; border: none; border-radius: 9px; padding: 9px 26px; font-family: inherit; font-size: 0.93rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.print-btn:hover { background: var(–text-dark); }
+
+@media print {
+body { background: white; }
+.page { padding: 14px; }
+.no-print { display: none !important; }
+.section { box-shadow: none; border: 1px solid #ccc; margin-bottom: 18px; }
+.suggest-box { display: none; }
+}
+</style>
+
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>Daily Health &amp; Activity Log</h1>
+    <p>A gentle record of your day — to help you understand your patterns over time</p>
+    <div class="date-bar">
+      <div class="date-field"><label>Date</label><input type="date" id="log-date"></div>
+      <div class="date-field"><label>Day</label>
+        <select id="log-day">
+          <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+          <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+        </select>
+      </div>
+      <div class="date-field"><label>Week</label><input type="number" style="width:48px" min="1" max="53" placeholder="—"></div>
+    </div>
+  </div>
+
+  <div class="legend no-print">
+    <span class="legend-title">Response tags:</span>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--physical)"></div> Physical</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--emotional)"></div> Emotional</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--psychological)"></div> Psychological</div>
+    <div class="legend-item" style="margin-left:auto"><div class="legend-dot" style="background:var(--care-accent)"></div> Caring activity</div>
+  </div>
+
+  <div class="print-bar no-print">
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+  </div>
+
+  <!-- SECTION 1: SLEEP -->
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#e0eaf8">🌙</div>
+      <div>
+        <div class="section-title">Last Night's Sleep</div>
+        <div class="section-subtitle">How you rested sets the tone for everything else</div>
+      </div>
+    </div>
+
+```
+<div class="form-row">
+  <div class="form-group"><label>Went to bed</label><input type="time"></div>
+  <div class="form-group"><label>Got up</label><input type="time"></div>
+  <div class="form-group"><label>Hours of sleep (est.)</label><input type="number" min="0" max="14" step="0.5" placeholder="e.g. 5.5"></div>
+</div>
+
+<div class="form-group" style="margin-bottom:14px">
+  <label>Overall sleep quality</label>
+  <div class="scale-row">
+    <span class="scale-label">Very poor</span>
+    <div class="scale-options">
+      <input type="radio" name="sleep-q" id="sq1" value="1"><label for="sq1">1</label>
+      <input type="radio" name="sleep-q" id="sq2" value="2"><label for="sq2">2</label>
+      <input type="radio" name="sleep-q" id="sq3" value="3"><label for="sq3">3</label>
+      <input type="radio" name="sleep-q" id="sq4" value="4"><label for="sq4">4</label>
+      <input type="radio" name="sleep-q" id="sq5" value="5"><label for="sq5">5</label>
+      <input type="radio" name="sleep-q" id="sq6" value="6"><label for="sq6">6</label>
+      <input type="radio" name="sleep-q" id="sq7" value="7"><label for="sq7">7</label>
+      <input type="radio" name="sleep-q" id="sq8" value="8"><label for="sq8">8</label>
+      <input type="radio" name="sleep-q" id="sq9" value="9"><label for="sq9">9</label>
+      <input type="radio" name="sleep-q" id="sq10" value="10"><label for="sq10">10</label>
+    </div>
+    <span class="scale-label right">Excellent</span>
+  </div>
+</div>
+
+<div class="form-group">
+  <label>Night wakings</label>
+  <p class="note-hint">Write freely — when you woke, what caused it, what helped, and roughly how long to get back to sleep</p>
+  <textarea style="min-height:72px; margin-top:6px" placeholder="e.g. 2am — pain in lower back, tried changing position, back to sleep after about 45 mins. 4:30am — woke briefly, settled quickly."></textarea>
+</div>
+```
+
+  </div>
+
+  <!-- SECTION 2: MORNING -->
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--warm-light)">🌅</div>
+      <div>
+        <div class="section-title">Waking &amp; Morning Feeling</div>
+        <div class="section-subtitle">How you felt when you first got up</div>
+      </div>
+    </div>
+
+```
+<div class="form-group" style="margin-bottom:14px">
+  <label>Energy on waking</label>
+  <div class="scale-row">
+    <span class="scale-label">Exhausted</span>
+    <div class="scale-options">
+      <input type="radio" name="energy-wake" id="ew1" value="1"><label for="ew1">1</label>
+      <input type="radio" name="energy-wake" id="ew2" value="2"><label for="ew2">2</label>
+      <input type="radio" name="energy-wake" id="ew3" value="3"><label for="ew3">3</label>
+      <input type="radio" name="energy-wake" id="ew4" value="4"><label for="ew4">4</label>
+      <input type="radio" name="energy-wake" id="ew5" value="5"><label for="ew5">5</label>
+      <input type="radio" name="energy-wake" id="ew6" value="6"><label for="ew6">6</label>
+      <input type="radio" name="energy-wake" id="ew7" value="7"><label for="ew7">7</label>
+      <input type="radio" name="energy-wake" id="ew8" value="8"><label for="ew8">8</label>
+      <input type="radio" name="energy-wake" id="ew9" value="9"><label for="ew9">9</label>
+      <input type="radio" name="energy-wake" id="ew10" value="10"><label for="ew10">10</label>
+    </div>
+    <span class="scale-label right">Energised</span>
+  </div>
+</div>
+
+<div class="form-group" style="margin-bottom:13px">
+  <label>Morning symptoms (tick all that apply)</label>
+  <div class="check-group">
+    <input type="checkbox" id="ms1"><label for="ms1">Brain fog</label>
+    <input type="checkbox" id="ms2"><label for="ms2">Body stiffness</label>
+    <input type="checkbox" id="ms3"><label for="ms3">Pain</label>
+    <input type="checkbox" id="ms4"><label for="ms4">Fatigue / heavy limbs</label>
+    <input type="checkbox" id="ms5"><label for="ms5">Anxiety</label>
+    <input type="checkbox" id="ms6"><label for="ms6">Low mood</label>
+    <input type="checkbox" id="ms7"><label for="ms7">Dizziness</label>
+    <input type="checkbox" id="ms8"><label for="ms8">Nausea</label>
+    <input type="checkbox" id="ms9"><label for="ms9">Relatively well</label>
+  </div>
+</div>
+
+<div class="form-group">
+  <label>Morning notes</label>
+  <textarea placeholder="How you felt when you got up — as much or as little as you like…"></textarea>
+</div>
+```
+
+  </div>
+
+  <!-- ACTIVITY SUGGESTIONS -->
+
+  <div class="suggest-box no-print">
+    <div class="suggest-box-header">
+      <div class="section-icon" style="background:#c8e6d4; width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:17px;">✨</div>
+      <div>
+        <div class="suggest-box-title">Suggested Activities for Today</div>
+        <div class="suggest-box-sub">Tell me how your night and morning were — I'll suggest gentle activities suited to how you're feeling right now</div>
+      </div>
+    </div>
+
+```
+<div class="suggest-controls">
+  <div class="form-group">
+    <label style="font-size:0.73rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.05em;">Sleep last night</label>
+    <select id="sug-sleep">
+      <option value="">— select —</option>
+      <option value="very-poor">Very poor (1–3)</option>
+      <option value="poor">Poor (4–5)</option>
+      <option value="moderate">Moderate (6–7)</option>
+      <option value="good">Good (8–10)</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label style="font-size:0.73rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.05em;">Energy this morning</label>
+    <select id="sug-energy">
+      <option value="">— select —</option>
+      <option value="very-low">Very low — exhausted</option>
+      <option value="low">Low — struggling</option>
+      <option value="moderate">Moderate — managing</option>
+      <option value="okay">Okay — reasonable</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label style="font-size:0.73rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.05em;">Pain this morning</label>
+    <select id="sug-pain">
+      <option value="">— select —</option>
+      <option value="high">High — significant pain</option>
+      <option value="moderate">Moderate — present but manageable</option>
+      <option value="low">Low — mild or background</option>
+      <option value="none">Minimal — good start to the day</option>
+    </select>
+  </div>
+  <button class="suggest-btn" onclick="getSuggestions()" id="sug-btn">Get suggestions →</button>
+</div>
+
+<div class="suggest-output" id="suggest-output">
+  <div class="suggest-loading" id="suggest-loading">Finding activities suited to how you're feeling today…</div>
+  <div id="suggest-content"></div>
+</div>
+```
+
+  </div>
+
+  <!-- SECTION 3: PAIN & FLARE-UPS -->
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#fce8e8">⚡</div>
+      <div>
+        <div class="section-title">Pain &amp; Symptom Flare-ups</div>
+        <div class="section-subtitle">ME/fibromyalgia, sciatica, or other symptoms — record as they happen</div>
+      </div>
+    </div>
+    <p class="note-hint" style="margin-bottom:11px">Record what you notice — you don't need to fill every row</p>
+
+```
+<div id="pain-entries">
+  <div class="pain-entry">
+    <div class="form-row" style="margin-bottom:7px">
+      <div class="form-group"><label>Time / period</label><input type="text" placeholder="e.g. 10am, after lunch…" style="border:none;border-bottom:1.5px solid #f4c4c4;width:100%;font-family:inherit;font-size:0.9rem;background:transparent;outline:none;padding:3px;color:var(--text-dark)"></div>
+      <div class="form-group"><label>Location / type</label><input type="text" placeholder="e.g. lower back, sciatica, all-over ache…" style="border:none;border-bottom:1.5px solid #f4c4c4;width:100%;font-family:inherit;font-size:0.9rem;background:transparent;outline:none;padding:3px;color:var(--text-dark)"></div>
+      <div class="form-group" style="max-width:100px"><label>Severity (1–10)</label><input type="number" min="1" max="10" style="border:none;border-bottom:1.5px solid #f4c4c4;width:100%;font-family:inherit;font-size:0.9rem;background:transparent;outline:none;padding:3px;color:var(--text-dark)"></div>
+    </div>
+    <div class="form-group"><label style="font-size:0.7rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:3px">Possible trigger / what helped</label><textarea style="min-height:42px;font-size:0.88rem" placeholder="What were you doing before? Did anything ease it?"></textarea></div>
+  </div>
+</div>
+<button class="add-btn no-print" onclick="addPainEntry()">+ Add another flare-up</button>
+```
+
+  </div>
+
+  <!-- SECTION 4: ACTIVITIES -->
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--sage-pale)">📋</div>
+      <div>
+        <div class="section-title">Activities</div>
+        <div class="section-subtitle">Write in time blocks — e.g. "2–4pm: walked to shops, made lunch"</div>
+      </div>
+    </div>
+    <p class="note-hint" style="margin-bottom:11px">For each activity, note the time range, what you did, then tick whether the response was physical, emotional, or psychological.</p>
+
+```
+<div id="activity-entries">
+  <div class="activity-entry">
+    <div class="activity-entry-header">
+      <div class="time-range"><input type="text" placeholder="e.g. 9am"><span>to</span><input type="text" placeholder="10:30"></div>
+      <textarea style="min-height:42px;font-size:0.9rem;flex:1" placeholder="What did you do? Write freely."></textarea>
+    </div>
+    <div class="response-tags">
+      <span class="response-tag-label">Response:</span>
+      <input type="checkbox" class="tag-physical" id="p1"><label for="p1">🔴 Physical</label>
+      <input type="checkbox" class="tag-emotional" id="e1"><label for="e1">🟣 Emotional</label>
+      <input type="checkbox" class="tag-psychological" id="ps1"><label for="ps1">🔵 Psychological</label>
+      <input type="checkbox" id="nr1"><label for="nr1">No notable response</label>
+    </div>
+    <div class="how-felt">
+      <label>How did it make you feel / what happened after?</label>
+      <textarea placeholder="e.g. wiped out, felt proud, triggered anxiety, enjoyed it but paid for it later…"></textarea>
+    </div>
+  </div>
+</div>
+<button class="add-btn no-print" onclick="addActivityEntry()">+ Add another activity</button>
+```
+
+  </div>
+
+  <!-- SECTION 5: CARING -->
+
+  <div class="section" style="border-color:var(--care-light)">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--care-light)">💜</div>
+      <div>
+        <div class="section-title">Caring Responsibilities</div>
+        <div class="section-subtitle">A separate space to record your caring work and its impact on you</div>
+      </div>
+    </div>
+    <p class="note-hint" style="margin-bottom:11px">Caring work is often invisible — recording it here makes its impact visible.</p>
+
+```
+<div id="care-entries">
+  <div class="activity-entry care-entry">
+    <div class="activity-entry-header">
+      <div class="time-range"><input type="text" placeholder="e.g. 8am"><span>to</span><input type="text" placeholder="9am"></div>
+      <textarea style="min-height:42px;font-size:0.9rem;flex:1" placeholder="What caring tasks did you do? (personal care, medications, appointments, emotional support, admin…)"></textarea>
+    </div>
+    <div class="form-row" style="margin-top:7px">
+      <div class="form-group"><label>Who you cared for</label><input type="text" placeholder="relationship / initials" style="border:none;border-bottom:1.5px solid #cbb8e0;width:100%;font-family:inherit;font-size:0.88rem;background:transparent;outline:none;padding:3px;color:var(--text-dark)"></div>
+      <div class="form-group"><label>Level of demand</label>
+        <select style="border:none;border-bottom:1.5px solid #cbb8e0;background:transparent;font-family:inherit;font-size:0.88rem;outline:none;width:100%;padding:3px;color:var(--text-dark)">
+          <option value="">—</option><option>Light / routine</option><option>Moderate</option><option>Heavy / intensive</option><option>Crisis / emergency</option>
+        </select>
+      </div>
+    </div>
+    <div class="response-tags" style="margin-top:8px">
+      <span class="response-tag-label">Your response:</span>
+      <input type="checkbox" class="tag-physical" id="cp1"><label for="cp1">🔴 Physical</label>
+      <input type="checkbox" class="tag-emotional" id="ce1"><label for="ce1">🟣 Emotional</label>
+      <input type="checkbox" class="tag-psychological" id="cps1"><label for="cps1">🔵 Psychological</label>
+    </div>
+    <div class="how-felt">
+      <label>How did caring today affect you?</label>
+      <textarea placeholder="e.g. emotionally draining, worried about them, needed to rest afterwards…"></textarea>
+    </div>
+  </div>
+</div>
+<button class="add-btn care-add-btn no-print" onclick="addCareEntry()">+ Add another caring activity</button>
+```
+
+  </div>
+
+  <!-- SECTION 6: END OF DAY — SIMPLIFIED -->
+
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:#e8f4ee">🌿</div>
+      <div>
+        <div class="section-title">End of Day — Quick Check-in</div>
+        <div class="section-subtitle">Just a few quick ratings to close the day</div>
+      </div>
+    </div>
+
+```
+<div class="form-group" style="margin-bottom:14px">
+  <label>Energy at end of day</label>
+  <div class="scale-row">
+    <span class="scale-label">Depleted</span>
+    <div class="scale-options">
+      <input type="radio" name="energy-eve" id="ee1" value="1"><label for="ee1">1</label>
+      <input type="radio" name="energy-eve" id="ee2" value="2"><label for="ee2">2</label>
+      <input type="radio" name="energy-eve" id="ee3" value="3"><label for="ee3">3</label>
+      <input type="radio" name="energy-eve" id="ee4" value="4"><label for="ee4">4</label>
+      <input type="radio" name="energy-eve" id="ee5" value="5"><label for="ee5">5</label>
+      <input type="radio" name="energy-eve" id="ee6" value="6"><label for="ee6">6</label>
+      <input type="radio" name="energy-eve" id="ee7" value="7"><label for="ee7">7</label>
+      <input type="radio" name="energy-eve" id="ee8" value="8"><label for="ee8">8</label>
+      <input type="radio" name="energy-eve" id="ee9" value="9"><label for="ee9">9</label>
+      <input type="radio" name="energy-eve" id="ee10" value="10"><label for="ee10">10</label>
+    </div>
+    <span class="scale-label right">Okay</span>
+  </div>
+</div>
+
+<div class="eod-row">
+  <div class="form-group" style="max-width:210px">
+    <label>Overall mood today</label>
+    <select style="border:none;border-bottom:1.5px solid var(--line);background:transparent;font-family:inherit;font-size:0.92rem;outline:none;width:100%;padding:5px 3px;color:var(--text-dark)">
+      <option value="">— select —</option>
+      <option>Very low</option><option>Low</option><option>Mixed</option><option>Mostly okay</option><option>Good</option><option>Very good</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Overall pain today (0–10)</label>
+    <div class="scale-row" style="margin-top:3px">
+      <div class="scale-options">
+        <input type="radio" name="pain-day" id="pd0" value="0"><label for="pd0">0</label>
+        <input type="radio" name="pain-day" id="pd2" value="2"><label for="pd2">2</label>
+        <input type="radio" name="pain-day" id="pd4" value="4"><label for="pd4">4</label>
+        <input type="radio" name="pain-day" id="pd6" value="6"><label for="pd6">6</label>
+        <input type="radio" name="pain-day" id="pd8" value="8"><label for="pd8">8</label>
+        <input type="radio" name="pain-day" id="pd10" value="10"><label for="pd10">10</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="form-group" style="margin-top:6px">
+  <label>Anything else to note (optional)</label>
+  <textarea style="min-height:52px" placeholder="Appointments, medication changes, anything you'd like to remember…"></textarea>
+</div>
+```
+
+  </div>
+
+  <div class="print-bar no-print">
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+    <button class="print-btn" style="background:var(--warm); margin-left:10px" onclick="startNewDay()">🌅 Start New Day</button>
+  </div>
+
+  <div class="no-print" style="text-align:center; margin-bottom:18px; min-height:20px">
+    <span id="save-status" style="font-size:0.8rem; color:var(--text-light); font-style:italic"></span>
+    <span id="save-indicator" style="font-size:0.8rem; color:var(--sage); font-weight:600; opacity:0; transition:opacity 0.4s; margin-left:12px"></span>
+  </div>
+
+</div>
+
+<script>
+  // ── Auto-save & restore ──────────────────────────────────────────────────
+  // Saves everything to localStorage as you type. On open, checks if saved
+  // data matches today's date — if yes, restores it; if not, starts fresh.
+
+  const SAVE_KEY = 'healthlog_data';
+
+  function getFormData() {
+    const data = { date: document.getElementById('log-date').value, fields: {}, checks: {}, radios: {}, dynamics: [] };
+
+    // All named textareas and text/time/number inputs
+    document.querySelectorAll('textarea, input[type="text"], input[type="time"], input[type="number"]').forEach((el, i) => {
+      const key = el.id || el.name || `field_${i}`;
+      data.fields[key + '_' + i] = el.value;
+    });
+
+    // Checkboxes
+    document.querySelectorAll('input[type="checkbox"]').forEach((el, i) => {
+      data.checks['cb_' + (el.id || i)] = el.checked;
+    });
+
+    // Radios
+    document.querySelectorAll('input[type="radio"]').forEach((el, i) => {
+      if (el.checked) data.radios[el.name] = el.value;
+    });
+
+    // Selects
+    document.querySelectorAll('select').forEach((el, i) => {
+      data.fields['select_' + (el.id || i)] = el.value;
+    });
+
+    // Dynamic entries count
+    data.activityCount = ac;
+    data.careCount = cc;
+    data.painCount = pc;
+
+    return data;
+  }
+
+  function saveForm() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify(getFormData()));
+      showSaveIndicator();
+    } catch(e) {}
+  }
+
+  function showSaveIndicator() {
+    const ind = document.getElementById('save-indicator');
+    if (!ind) return;
+    ind.textContent = '✓ Saved';
+    ind.style.opacity = '1';
+    clearTimeout(ind._t);
+    ind._t = setTimeout(() => { ind.style.opacity = '0'; }, 2000);
+  }
+
+  function restoreForm(data) {
+    // Restore field values by position index
+    document.querySelectorAll('textarea, input[type="text"], input[type="time"], input[type="number"]').forEach((el, i) => {
+      const key = (el.id || el.name || `field_${i}`) + '_' + i;
+      if (data.fields[key] !== undefined) el.value = data.fields[key];
+    });
+
+    // Restore checkboxes
+    document.querySelectorAll('input[type="checkbox"]').forEach((el, i) => {
+      const key = 'cb_' + (el.id || i);
+      if (data.checks[key] !== undefined) el.checked = data.checks[key];
+    });
+
+    // Restore radios
+    document.querySelectorAll('input[type="radio"]').forEach(el => {
+      if (data.radios[el.name] === el.value) el.checked = true;
+    });
+
+    // Restore selects
+    document.querySelectorAll('select').forEach((el, i) => {
+      const key = 'select_' + (el.id || i);
+      if (data.fields[key] !== undefined) el.value = data.fields[key];
+    });
+  }
+
+  function startNewDay() {
+    if (!confirm('Start a fresh log for today? This will clear yesterday\'s entries.')) return;
+    localStorage.removeItem(SAVE_KEY);
+    location.reload();
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  document.getElementById('log-date').value = todayStr;
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  document.getElementById('log-day').value = days[today.getDay()];
+
+  let ac = 1, cc = 1, pc = 1;
+
+  // Try to restore saved data
+  try {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.date === todayStr) {
+        // Same day — restore silently
+        setTimeout(() => restoreForm(data), 50);
+        document.getElementById('save-status').textContent = 'Restored from earlier today';
+      } else {
+        // Different day — show prompt
+        document.getElementById('save-status').textContent = 'You have a saved log from ' + data.date + ' — click "Start New Day" to begin today\'s log.';
+        document.getElementById('save-status').style.color = 'var(--warm)';
+      }
+    }
+  } catch(e) {}
+
+  // Auto-save on any input change
+  document.addEventListener('input', saveForm);
+  document.addEventListener('change', saveForm);
+
+  function addActivityEntry() {
+    ac++;
+    const div = document.createElement('div');
+    div.className = 'activity-entry';
+    div.innerHTML = `
+      <div class="activity-entry-header">
+        <div class="time-range"><input type="text" placeholder="e.g. 2pm"><span>to</span><input type="text" placeholder="4pm"></div>
+        <textarea style="min-height:42px;font-size:0.9rem;flex:1" placeholder="What did you do? Write freely."></textarea>
+
+```
+  </div>
+  <div class="response-tags">
+    <span class="response-tag-label">Response:</span>
+    <input type="checkbox" class="tag-physical" id="p${ac}"><label for="p${ac}">🔴 Physical</label>
+    <input type="checkbox" class="tag-emotional" id="e${ac}"><label for="e${ac}">🟣 Emotional</label>
+    <input type="checkbox" class="tag-psychological" id="ps${ac}"><label for="ps${ac}">🔵 Psychological</label>
+    <input type="checkbox" id="nr${ac}"><label for="nr${ac}">No notable response</label>
+  </div>
+  <div class="how-felt">
+    <label>How did it make you feel / what happened after?</label>
+    <textarea placeholder="e.g. wiped out, felt proud, triggered anxiety…"></textarea>
+  </div>`;
+document.getElementById('activity-entries').appendChild(div);
+```
+
+}
+
+function addCareEntry() {
+cc++;
+const div = document.createElement(‘div’);
+div.className = ‘activity-entry care-entry’;
+div.innerHTML = ` <div class="activity-entry-header"> <div class="time-range"><input type="text" placeholder="e.g. 3pm"><span>to</span><input type="text" placeholder="4pm"></div> <textarea style="min-height:42px;font-size:0.9rem;flex:1" placeholder="What caring tasks did you do?"></textarea> </div> <div class="form-row" style="margin-top:7px"> <div class="form-group"><label>Who you cared for</label><input type="text" placeholder="relationship / initials" style="border:none;border-bottom:1.5px solid #cbb8e0;width:100%;font-family:inherit;font-size:0.88rem;background:transparent;outline:none;padding:3px;color:var(--text-dark)"></div> <div class="form-group"><label>Level of demand</label> <select style="border:none;border-bottom:1.5px solid #cbb8e0;background:transparent;font-family:inherit;font-size:0.88rem;outline:none;width:100%;padding:3px;color:var(--text-dark)"> <option value="">—</option><option>Light / routine</option><option>Moderate</option><option>Heavy / intensive</option><option>Crisis / emergency</option> </select> </div> </div> <div class="response-tags" style="margin-top:8px"> <span class="response-tag-label">Your response:</span> <input type="checkbox" class="tag-physical" id="cp${cc}"><label for="cp${cc}">🔴 Physical</label> <input type="checkbox" class="tag-emotional" id="ce${cc}"><label for="ce${cc}">🟣 Emotional</label> <input type="checkbox" class="tag-psychological" id="cps${cc}"><label for="cps${cc}">🔵 Psychological</label> </div> <div class="how-felt"> <label>How did caring today affect you?</label> <textarea placeholder="e.g. emotionally draining, needed to rest afterwards…"></textarea> </div>`;
+document.getElementById(‘care-entries’).appendChild(div);
+}
+
+function addPainEntry() {
+pc++;
+const div = document.createElement(‘div’);
+div.className = ‘pain-entry’;
+div.innerHTML = ` <div class="form-row" style="margin-bottom:7px"> <div class="form-group"><label>Time / period</label><input type="text" placeholder="e.g. 10am, after lunch…" style="border:none;border-bottom:1.5px solid #f4c4c4;width:100%;font-family:inherit;font-size:0.9rem;background:transparent;outline:none;padding:3px;color:var(--text-dark)"></div> <div class="form-group"><label>Location / type</label><input type="text" placeholder="e.g. lower back, sciatica…" style="border:none;border-bottom:1.5px solid #f4c4c4;width:100%;font-family:inherit;font-size:0.9rem;background:transparent;outline:none;padding:3px;color:var(--text-dark)"></div> <div class="form-group" style="max-width:100px"><label>Severity (1–10)</label><input type="number" min="1" max="10" style="border:none;border-bottom:1.5px solid #f4c4c4;width:100%;font-family:inherit;font-size:0.9rem;background:transparent;outline:none;padding:3px;color:var(--text-dark)"></div> </div> <div class="form-group"><label style="font-size:0.7rem;font-weight:600;color:var(--text-light);text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:3px">Possible trigger / what helped</label><textarea style="min-height:42px;font-size:0.88rem" placeholder="What were you doing before? Did anything ease it?"></textarea></div>`;
+document.getElementById(‘pain-entries’).appendChild(div);
+}
+
+// ── Suggestion library ──────────────────────────────────────────────────
+// Keyed by energy level (very-low / low / moderate / okay),
+// then adjusted based on pain and sleep.
+
+const SUGGESTIONS = {
+‘very-low’: {
+physical: [
+‘Lie comfortably and do 5 minutes of slow, belly-breathing — breathe in for 4 counts, out for 6.’,
+‘While lying down, gently rotate your ankles and flex your feet a few times to keep circulation moving.’,
+‘If you feel able, sit upright for a short while with support — even 10 minutes out of bed counts as movement today.’
+],
+mental: [
+‘Listen to a familiar, soothing audiobook, podcast, or radio programme — something that doesn't require much concentration.’,
+‘Rest your eyes and simply notice sounds around you for a few minutes — a gentle grounding practice.’,
+‘If your mind feels up to it, do a very simple word puzzle or crossword clue — just one or two, then rest.’
+],
+step: ‘Drink a full glass of water and take any medications you need — that is already a meaningful act of self-care on a very hard day.’,
+note: ‘On a day like this, rest is not giving up — it is exactly the right medicine. Be as gentle with yourself as you would be with someone you love.’
+},
+‘low’: {
+physical: [
+‘Try a short, slow walk within the house or to a nearby window — even 5 minutes is worthwhile.’,
+‘Do some gentle seated stretches for your shoulders and neck, which can ease tension from disrupted sleep.’,
+‘If sciatica allows, try a few gentle pelvic tilts lying on your back — this can ease lower back stiffness without overexertion.’
+],
+mental: [
+‘Write two or three sentences in a notebook about how you're feeling — no pressure to say anything particular, just letting it out.’,
+‘Put on music you enjoy and simply sit with it — let yourself be carried by it without any other task.’,
+‘Browse something visually pleasing online — gardens, art, travel photos — for 10 minutes as a gentle mood lift.’
+],
+step: ‘Plan one very small thing you will eat or drink that will nourish you today, and make sure you have it.’,
+note: ‘You are managing a genuinely difficult situation, and getting through the day is a real achievement — please don't measure yourself against a well day.’
+},
+‘moderate’: {
+physical: [
+‘Take a short walk outside if the weather allows — aim for 10–15 minutes at a pace that lets you hold a conversation.’,
+‘Try a gentle seated yoga or stretching routine online — look for “chair yoga for chronic pain” (5–10 minutes).’,
+‘Do some slow, mindful housework for 10 minutes — folding laundry, light tidying — then rest before doing more.’
+],
+mental: [
+‘Spend 15 minutes on a creative or absorbing hobby — reading, a craft, a puzzle — something just for you.’,
+‘Phone or message someone whose company lifts you, even briefly.’,
+‘Spend a few minutes outside, or by an open window — fresh air and natural light are genuinely restorative for ME and fibromyalgia.’
+],
+step: ‘Identify one small caring or admin task you've been putting off and do just the first step of it — even reading an email or writing one sentence counts.’,
+note: ‘A moderate day is worth protecting — pace yourself through it so you still have something left this evening.’
+},
+‘okay’: {
+physical: [
+‘Go for a walk of 20–30 minutes at a comfortable pace, stopping if you feel any warning signs of overdoing it.’,
+‘Try some gentle strength exercises — seated leg lifts, wall push-ups — for 10 minutes, staying well within your limits.’,
+‘If you've been meaning to try hydrotherapy, a warm bath with gentle limb movements can be very helpful for fibromyalgia pain.’
+],
+mental: [
+‘Do something creative or intellectually engaging that you genuinely enjoy — this is a good day to invest in something that feeds you.’,
+‘Spend time in a green space if you can — even sitting in a garden is deeply restorative.’,
+‘Use this relatively better day to connect with someone important to you — a proper conversation, not just a message.’
+],
+step: ‘Think about one aspect of your sleep routine you could adjust tonight — a consistent bedtime, reducing screens, or a calming wind-down habit — and try it this evening.’,
+note: ‘An okay day is a gift — enjoy it gently, and remember that pacing on a good day is what makes more good days possible.’
+}
+};
+
+// Pain and sleep modifiers — additional notes appended when relevant
+const PAIN_NOTES = {
+high: ‘With high pain today, prioritise heat (a heat pad on the painful area), keeping warm, and horizontal rest between any activities.’,
+moderate: ‘With moderate pain, try to alternate activity and rest in short cycles — 10 minutes on, 10 minutes resting.’,
+low: ‘’,
+none: ‘’
+};
+
+const SLEEP_NOTES = {
+‘very-poor’: ‘After a very poor night, plan at least one rest period of 20–30 minutes lying down this afternoon — not necessarily to sleep, just to recover.’,
+‘poor’: ‘After a poor night, be especially careful not to push through fatigue — rest before you feel you have to.’,
+‘moderate’: ‘’,
+‘good’: ‘’
+};
+
+let sugItemId = 0;
+
+function makeSugItem(text, category) {
+sugItemId++;
+const id = `sug_${category}_${sugItemId}`;
+return ` <li class="sug-item"> <label class="sug-tick-label" for="${id}"> <input type="checkbox" class="sug-tick" id="${id}" data-sug="1" onchange="saveForm()"> <span class="sug-tick-box"></span> <span class="sug-text">${text}</span> </label> </li>`;
+}
+
+function makeTipItem(text) {
+return `<li class="sug-item sug-tip"><span class="sug-text">${text}</span></li>`;
+}
+
+function getSuggestions() {
+const sleep = document.getElementById(‘sug-sleep’).value;
+const energy = document.getElementById(‘sug-energy’).value;
+const pain = document.getElementById(‘sug-pain’).value;
+if (!sleep || !energy || !pain) { alert(‘Please select your sleep, energy, and pain level first.’); return; }
+
+```
+const output = document.getElementById('suggest-output');
+const loading = document.getElementById('suggest-loading');
+const content = document.getElementById('suggest-content');
+
+output.classList.add('visible');
+loading.style.display = 'none';
+sugItemId = 0;
+
+const s = SUGGESTIONS[energy];
+const painNote = PAIN_NOTES[pain];
+const sleepNote = SLEEP_NOTES[sleep];
+
+const physCount = (energy === 'okay' || energy === 'moderate') ? 3 : 2;
+const physItems = s.physical.slice(0, physCount).map(t => makeSugItem(t, 'phys')).join('');
+const mentItems = s.mental.slice(0, energy === 'very-low' ? 2 : 3).map(t => makeSugItem(t, 'ment')).join('');
+const stepItem = makeSugItem(s.step, 'step');
+
+let extras = '';
+if (painNote) extras += makeTipItem('<strong>Pain tip:</strong> ' + painNote);
+if (sleepNote) extras += makeTipItem('<strong>Sleep recovery:</strong> ' + sleepNote);
+
+content.innerHTML = `
+  <p class="sug-hint">Tick anything you manage to do — no pressure, every small thing counts.</p>
+  <h4>Physical activities</h4>
+  <ul class="sug-list">${physItems}</ul>
+  <h4>Mental &amp; emotional wellbeing</h4>
+  <ul class="sug-list">${mentItems}</ul>
+  ${extras ? `<h4>Things to keep in mind today</h4><ul class="sug-list">${extras}</ul>` : ''}
+  <h4>One small step</h4>
+  <ul class="sug-list">${stepItem}</ul>
+  <p class="sug-note">${s.note}</p>
+`;
+```
+
+}
+</script>
+
+</body>
+</html>
